@@ -88,10 +88,30 @@ body {
     padding: 2rem;
 }
 
-#cleanup-map {
+.map-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+#cleanup-map,
+#next-cleanup {
     height: 400px;
     border-radius: 10px;
+    overflow: hidden;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#next-cleanup {
+    background: var(--color-background);
+    padding: 1rem;
+}
+
+#next-cleanup h3 {
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
 }
 
 .weather-widget {
@@ -104,6 +124,55 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+}
+
+#events-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.event-card {
+    background: var(--color-background);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 128, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid var(--color-primary);
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 128, 0.15);
+}
+
+.event-card h3 {
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.event-card p {
+    margin: 0.5rem 0;
+    color: var(--color-text);
+}
+
+.join-button {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    margin-top: 1rem;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.join-button:hover {
+    background-color: #ff6b3d;
 }
 
 footer {
@@ -129,5 +198,17 @@ footer {
 
     .hero h1 {
         font-size: 2rem;
+    }
+    
+    #events-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .event-card {
+        margin-bottom: 1rem;
+    }
+    
+    .map-grid {
+        grid-template-columns: 1fr;
     }
 }
