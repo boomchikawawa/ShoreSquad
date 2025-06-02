@@ -4,8 +4,8 @@ let markers = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeMap();
-    setupWeatherWidget();
     loadEvents();
+    setupWeatherForecast();
 });
 
 function initializeMap() {
@@ -13,24 +13,6 @@ function initializeMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-}
-
-async function setupWeatherWidget() {
-    const weatherContainer = document.getElementById('weather-info');
-    try {
-        // Note: Replace with actual weather API implementation
-        weatherContainer.innerHTML = `
-            <div class="weather-card">
-                <h3>Current Beach Weather</h3>
-                <div class="weather-details">
-                    <p>Loading weather data...</p>
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        console.error('Error fetching weather:', error);
-        weatherContainer.innerHTML = '<p>Weather data temporarily unavailable</p>';
-    }
 }
 
 function loadEvents() {
@@ -49,16 +31,19 @@ function loadEvents() {
             location: 'Siloso Beach',
             participants: 15
         }
-    ];
-
-    const eventHTML = sampleEvents.map(event => `
+    ];    const eventHTML = sampleEvents.map(event => `
         <div class="event-card">
-            <h3>${event.title}</h3>
-            <p>Date: ${event.date}</p>
-            <p>Location: ${event.location}</p>
-            <p>Squad Members: ${event.participants}</p>
+            <h3><i class="fas fa-trash-alt"></i> ${event.title}</h3>
+            <p><i class="far fa-calendar-alt"></i> ${new Date(event.date).toLocaleDateString('en-SG', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</p>
+            <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+            <p><i class="fas fa-users"></i> ${event.participants} Squad Members</p>
             <button onclick="joinEvent('${event.title}')" class="join-button">
-                Join Squad
+                <i class="fas fa-plus-circle"></i> Join Squad
             </button>
         </div>
     `).join('');
@@ -78,4 +63,71 @@ if ('serviceWorker' in navigator) {
             console.error('ServiceWorker registration failed:', err);
         });
     });
+}
+
+async function setupWeatherForecast() {
+    const weatherContainer = document.getElementById('weather-info');
+    try {
+        const response = await fetch('https://api.data.gov.sg/v1/environment/4-day-weather-forecast');
+        const data = await response.json();
+        
+        if (data.items && data.items[0].forecasts) {
+            const forecasts = data.items[0].forecasts;
+            const forecastHTML = forecasts.map(forecast => {
+                const date = new Date(forecast.date);
+                const formattedDate = date.toLocaleDateString('en-SG', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short'
+                });
+                  const weatherIcon = getWeatherIcon(forecast.forecast);
+                return `
+                    <div class="weather-card">
+                        <div class="date">${formattedDate}</div>
+                        <div class="weather-icon">
+                            <i class="${weatherIcon}"></i>
+                        </div>
+                        <div class="forecast">${forecast.forecast}</div>
+                        <div class="temperature">
+                            <i class="fas fa-temperature-high"></i>
+                            ${forecast.temperature.low}°C - ${forecast.temperature.high}°C
+                        </div>
+                        <div class="humidity">
+                            <i class="fas fa-tint"></i>
+                            ${forecast.relative_humidity.low}% - ${forecast.relative_humidity.high}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            weatherContainer.innerHTML = forecastHTML;
+        } else {
+            throw new Error('Invalid forecast data');
+        }
+    } catch (error) {
+        console.error('Error fetching weather forecast:', error);
+        weatherContainer.innerHTML = `
+            <div class="weather-card">
+                <p>Weather forecast temporarily unavailable</p>
+                <p>Please check back later</p>
+            </div>
+        `;
+    }
+}
+
+function getWeatherIcon(forecast) {
+    const lowerForecast = forecast.toLowerCase();
+    if (lowerForecast.includes('thundery')) {
+        return 'fas fa-bolt';
+    } else if (lowerForecast.includes('rain')) {
+        return 'fas fa-cloud-rain';
+    } else if (lowerForecast.includes('cloudy') || lowerForecast.includes('overcast')) {
+        return 'fas fa-cloud';
+    } else if (lowerForecast.includes('sunny') || lowerForecast.includes('fair')) {
+        return 'fas fa-sun';
+    } else if (lowerForecast.includes('partly cloudy')) {
+        return 'fas fa-cloud-sun';
+    } else {
+        return 'fas fa-cloud-sun'; // default icon
+    }
 }
